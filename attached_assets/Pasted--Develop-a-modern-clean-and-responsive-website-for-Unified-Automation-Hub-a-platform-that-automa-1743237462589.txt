@@ -1,0 +1,110 @@
+
+Develop a modern, clean, and responsive website for "Unified Automation Hub"—a platform that automates workflows between different applications. The site should reflect professionalism and innovation with clear navigation and interactive elements. It must include at least four key components: a Home page, an About page, a Workflow Management (Work) page, and a persistent popup bar for announcements or quick actions.
+
+Pages & Features
+Home Page:
+
+Hero Section:
+
+A large, engaging banner with a tagline (e.g., "Automate Your Workflow, Empower Your Business") and a clear call-to-action button ("Get Started" or "Learn More").
+
+A background image or video that conveys connectivity and efficiency.
+
+Overview:
+
+A brief introduction to the platform, highlighting key benefits like ease of integration and real-time automation.
+
+Features Section:
+
+Icons and short descriptions for core features such as drag-and-drop workflow building, real-time communication, secure integrations, and robust testing.
+
+Testimonials/Case Studies:
+
+A carousel or grid layout showcasing customer success stories.
+
+Footer:
+
+Quick links, social media icons, and contact details.
+
+About Page:
+
+Company Mission & Vision:
+
+A clear statement outlining the purpose behind the platform and its goals in transforming business workflows.
+
+Team & History:
+
+A timeline or narrative covering the company’s journey, key milestones, and the leadership team.
+
+Values & Culture:
+
+Insights into the company’s core values and how they drive innovation and customer success.
+
+Press/News:
+
+A section featuring recent press releases, blog posts, or media mentions.
+
+Work (Workflow Management) Page:
+
+Workflow Dashboard:
+
+A robust, drag-and-drop interface that allows users to create, modify, and manage workflows.
+
+Users can add triggers, actions, and conditions to automate tasks across various connected apps.
+
+Testing & Simulation Mode:
+
+A dedicated section where users can test their workflows before going live.
+
+Include simulation tools that show a step-by-step execution preview, detailed logs, and error reporting.
+
+Real-Time Monitoring & Logs:
+
+An interactive panel that displays real-time statistics, execution logs, and alerts for workflows currently in operation.
+
+User Controls:
+
+Features to start, stop, pause, or schedule workflows.
+
+Options for users to view performance metrics and make adjustments based on test outcomes.
+
+Popup Bar (Persistent Element):
+
+Design:
+
+A slim, dismissible popup bar appearing at the top or bottom of the screen.
+
+Use it to display important announcements, special offers, or quick tips.
+
+Behavior:
+
+It should be easily dismissible and once dismissed, not reappear for that user (using cookies or local storage).
+
+Technical & Design Requirements
+Responsive & Accessible Design:
+Ensure the site works seamlessly on desktops, tablets, and smartphones while adhering to WCAG guidelines.
+
+Modern Tech Stack:
+
+Frontend: React with TypeScript, Tailwind CSS (or a similar utility-first CSS framework), and a component library (e.g., Shadcn UI).
+
+Backend: Node.js with Express, PostgreSQL for data storage, Drizzle ORM for database interactions, and Passport.js for authentication.
+
+Real-Time Features: Use Redis and WebSockets to power the real-time dashboard on the Work page.
+
+Performance & Scalability:
+Optimize for fast load times and ensure that the workflow builder and testing tools can handle complex scenarios without slowing down.
+
+Security & Compliance:
+Secure authentication, role-based access control, and data encryption are crucial—especially for a medical platform.
+
+Additional Guidance
+User-Centered Workflow Design:
+Focus on usability. The Work page should empower users with intuitive controls, clear visual feedback, and the ability to easily test and adjust workflows.
+
+Documentation & Onboarding:
+Include a help section or guided walkthrough on the Work page to help users understand how to build and test workflows.
+
+Integration Flexibility:
+Design the system so that additional integrations can be added easily in the future.
+
