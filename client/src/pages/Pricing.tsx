@@ -1,5 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/lib/icons";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PricingCalculator from "@/components/pricing/PricingCalculator";
+import FeatureComparison from "@/components/pricing/FeatureComparison";
 
 export default function Pricing() {
   return (
@@ -41,6 +44,18 @@ export default function Pricing() {
                 <li className="flex items-start">
                   <Icons.check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
                   <span>Email support</span>
+                </li>
+                <li className="flex items-start">
+                  <Icons.check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                  <span>Basic conditional logic</span>
+                </li>
+                <li className="flex items-start">
+                  <Icons.check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                  <span>Up to 3 team members</span>
+                </li>
+                <li className="flex items-start">
+                  <Icons.check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                  <span>1 GB data storage</span>
                 </li>
               </ul>
             </div>
@@ -85,6 +100,14 @@ export default function Pricing() {
                 <li className="flex items-start">
                   <Icons.check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
                   <span>Advanced workflow analytics</span>
+                </li>
+                <li className="flex items-start">
+                  <Icons.check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                  <span>Up to 10 team members</span>
+                </li>
+                <li className="flex items-start">
+                  <Icons.check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                  <span>10 GB data storage</span>
                 </li>
               </ul>
             </div>
@@ -131,9 +154,116 @@ export default function Pricing() {
                   <Icons.check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
                   <span>Dedicated account manager</span>
                 </li>
+                <li className="flex items-start">
+                  <Icons.check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                  <span>100 GB+ data storage</span>
+                </li>
               </ul>
             </div>
           </div>
+        </div>
+
+        {/* Pricing Calculator Section */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">Estimate Your Cost</h2>
+          <PricingCalculator />
+        </div>
+
+        {/* Feature Comparison Section */}
+        <div className="mt-16 max-w-6xl mx-auto">
+          <Tabs defaultValue="comparison" className="w-full">
+            <div className="flex justify-center mb-6">
+              <TabsList>
+                <TabsTrigger value="comparison">
+                  <Icons.layoutGrid className="mr-2 h-4 w-4" /> Feature Comparison
+                </TabsTrigger>
+                <TabsTrigger value="frequently-compared">
+                  <Icons.arrowLeftRight className="mr-2 h-4 w-4" /> Frequently Compared
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <TabsContent value="comparison" className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-bold mb-6 text-center">Compare Plan Features</h3>
+              <FeatureComparison />
+            </TabsContent>
+            
+            <TabsContent value="frequently-compared" className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-bold mb-6 text-center">Compare to Similar Solutions</h3>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100">
+                      <th className="text-left p-4">Feature</th>
+                      <th className="text-center p-4">
+                        <div className="font-semibold text-lg text-primary-600">Unified Automation Hub</div>
+                        <div className="font-normal text-slate-500">$79/month</div>
+                      </th>
+                      <th className="text-center p-4">
+                        <div className="font-semibold text-lg">Competitor A</div>
+                        <div className="font-normal text-slate-500">$99/month</div>
+                      </th>
+                      <th className="text-center p-4">
+                        <div className="font-semibold text-lg">Competitor B</div>
+                        <div className="font-normal text-slate-500">$129/month</div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-3 px-4">Number of Workflows</td>
+                      <td className="py-3 px-4 text-center font-medium text-primary-600">Unlimited</td>
+                      <td className="py-3 px-4 text-center">Up to 25</td>
+                      <td className="py-3 px-4 text-center">Unlimited</td>
+                    </tr>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-3 px-4">Monthly Tasks</td>
+                      <td className="py-3 px-4 text-center font-medium text-primary-600">10,000</td>
+                      <td className="py-3 px-4 text-center">5,000</td>
+                      <td className="py-3 px-4 text-center">15,000</td>
+                    </tr>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-3 px-4">User Access</td>
+                      <td className="py-3 px-4 text-center font-medium text-primary-600">10 users</td>
+                      <td className="py-3 px-4 text-center">5 users</td>
+                      <td className="py-3 px-4 text-center">8 users</td>
+                    </tr>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-3 px-4">Number of Integrations</td>
+                      <td className="py-3 px-4 text-center font-medium text-primary-600">100+</td>
+                      <td className="py-3 px-4 text-center">50+</td>
+                      <td className="py-3 px-4 text-center">75+</td>
+                    </tr>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-3 px-4">Conditional Logic</td>
+                      <td className="py-3 px-4 text-center font-medium text-primary-600">Advanced</td>
+                      <td className="py-3 px-4 text-center">Basic</td>
+                      <td className="py-3 px-4 text-center">Advanced</td>
+                    </tr>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-3 px-4">API Access</td>
+                      <td className="py-3 px-4 text-center font-medium text-primary-600">Full API</td>
+                      <td className="py-3 px-4 text-center">Limited API</td>
+                      <td className="py-3 px-4 text-center">Full API</td>
+                    </tr>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-3 px-4">Support</td>
+                      <td className="py-3 px-4 text-center font-medium text-primary-600">Priority Email & Chat</td>
+                      <td className="py-3 px-4 text-center">Email Only</td>
+                      <td className="py-3 px-4 text-center">Email & Chat</td>
+                    </tr>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-3 px-4">Workflow Templates</td>
+                      <td className="py-3 px-4 text-center font-medium text-primary-600">50+ templates</td>
+                      <td className="py-3 px-4 text-center">25 templates</td>
+                      <td className="py-3 px-4 text-center">30 templates</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* FAQs */}
@@ -155,6 +285,14 @@ export default function Pricing() {
             <div className="bg-white p-6 rounded-lg shadow-sm">
               <h3 className="font-bold mb-2">Is there a setup fee?</h3>
               <p className="text-slate-600">No, there are no setup fees on any of our plans. You only pay the advertised monthly price.</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="font-bold mb-2">Do you offer annual billing?</h3>
+              <p className="text-slate-600">Yes, we offer annual billing with a 15% discount compared to monthly billing. Contact our sales team for more information.</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="font-bold mb-2">What payment methods do you accept?</h3>
+              <p className="text-slate-600">We accept all major credit cards, PayPal, and for Enterprise plans, we also accept wire transfers and purchase orders.</p>
             </div>
           </div>
         </div>

@@ -31,7 +31,20 @@ import {
   BarChart2,
   Search,
   LayoutGrid,
-  List
+  List,
+  ShoppingCart,
+  ArrowLeftRight,
+  ArrowLeft,
+  ArrowRight,
+  Share,
+  Trash,
+  UserPlus,
+  ActivitySquare,
+  Zap,
+  GraduationCap,
+  ArrowUpDown,
+  RefreshCw,
+  Boxes
 } from "lucide-react";
 
 // Import social media icons from react-icons
@@ -42,7 +55,16 @@ import {
   FaGithub, 
   FaStar, 
   FaStarHalfAlt,
-  FaPuzzlePiece
+  FaPuzzlePiece,
+  FaTasks,
+  FaCode,
+  FaSyncAlt,
+  FaRegWindowMaximize,
+  FaGraduationCap,
+  FaLayerGroup,
+  FaNetworkWired,
+  FaSitemap,
+  FaBolt
 } from "react-icons/fa";
 
 // Icon mapping
@@ -82,6 +104,30 @@ export const Icons = {
   grid: LayoutGrid,
   list: List,
   puzzle: FaPuzzlePiece,
+  
+  // Additional icons for UI components
+  x: X,
+  shoppingCart: ShoppingCart,
+  layoutGrid: LayoutGrid,
+  arrowLeftRight: ArrowLeftRight,
+  layoutTemplate: FaLayerGroup,
+  arrowLeft: ArrowLeft,
+  arrowRight: ArrowRight,
+  workflow: FaSitemap,
+  share: Share,
+  trash: Trash,
+  formInput: FaCode,
+  userPlus: UserPlus,
+  mail: Mail,
+  send: Send,
+  listTodo: FaTasks,
+  gitBranch: FaNetworkWired,
+  arrowDownUp: ArrowUpDown,
+  refresh: RefreshCw,
+  activity: ActivitySquare,
+  plugZap: FaBolt,
+  graduationCap: GraduationCap,
+  appWindow: FaRegWindowMaximize,
   
   // Social media
   twitter: FaTwitter,
