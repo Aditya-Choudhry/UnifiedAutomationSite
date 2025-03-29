@@ -6,10 +6,12 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Work from "@/pages/Work";
+import Pricing from "@/pages/Pricing";
+import Demo from "@/pages/Demo";
 import PopupBar from "@/components/PopupBar";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 function Router() {
   // Add header offset for smooth scrolling based on whether popup is visible
@@ -24,6 +26,8 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/about" component={About} />
           <Route path="/work" component={Work} />
+          <Route path="/pricing" component={Pricing} />
+          <Route path="/demo" component={Demo} />
           <Route component={NotFound} />
         </Switch>
       </main>

@@ -23,9 +23,9 @@ export default function HeroSection() {
             <Link href="/work" className="bg-[#F59E0B] hover:bg-[#D97706] text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition transform hover:scale-105">
               Get Started Free
             </Link>
-            <a href="#" className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition">
-              Watch Demo <svg className="w-5 h-5 ml-2 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-            </a>
+            <Link href="/demo" className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition">
+              Try Demo <svg className="w-5 h-5 ml-2 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            </Link>
           </div>
           <div className="mt-12 flex flex-wrap justify-center gap-6">
             {/* Partner logos - Using SVG instead of images */}

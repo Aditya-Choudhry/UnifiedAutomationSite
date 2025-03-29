@@ -59,8 +59,12 @@ export default function Navbar({ popupVisible }: NavbarProps) {
           <Link href="/work" className={`font-medium ${location === '/work' ? 'text-slate-900' : 'text-slate-600'} hover:text-primary-500 transition`}>
             Work
           </Link>
-          <a href="#" className="font-medium text-slate-600 hover:text-primary-500 transition">Pricing</a>
-          <a href="#" className="font-medium text-slate-600 hover:text-primary-500 transition">Blog</a>
+          <Link href="/pricing" className={`font-medium ${location === '/pricing' ? 'text-slate-900' : 'text-slate-600'} hover:text-primary-500 transition`}>
+            Pricing
+          </Link>
+          <Link href="/demo" className={`font-medium ${location === '/demo' ? 'text-slate-900' : 'text-slate-600'} hover:text-primary-500 transition`}>
+            Demo
+          </Link>
         </nav>
         
         <div className="flex items-center space-x-3">
@@ -82,8 +86,8 @@ export default function Navbar({ popupVisible }: NavbarProps) {
           <Link href="/" onClick={closeMobileMenu} className="block py-2 text-slate-600 hover:text-primary-500 font-medium">Home</Link>
           <Link href="/about" onClick={closeMobileMenu} className="block py-2 text-slate-600 hover:text-primary-500 font-medium">About</Link>
           <Link href="/work" onClick={closeMobileMenu} className="block py-2 text-slate-600 hover:text-primary-500 font-medium">Work</Link>
-          <a href="#" className="block py-2 text-slate-600 hover:text-primary-500 font-medium">Pricing</a>
-          <a href="#" className="block py-2 text-slate-600 hover:text-primary-500 font-medium">Blog</a>
+          <Link href="/pricing" onClick={closeMobileMenu} className="block py-2 text-slate-600 hover:text-primary-500 font-medium">Pricing</Link>
+          <Link href="/demo" onClick={closeMobileMenu} className="block py-2 text-slate-600 hover:text-primary-500 font-medium">Demo</Link>
           <a href="#" className="block py-2 text-slate-600 hover:text-primary-500 font-medium">Sign In</a>
         </div>
       </div>
