@@ -1,87 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Icons } from '@/lib/icons';
-import useWebSocket from '@/hooks/use-websocket';
+import {
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Signal
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-export function WebSocketStatus() {
-  const [messages, setMessages] = useState<any[]>([]);
-  
-  const { status, lastMessage, sendMessage } = useWebSocket({
-    onMessage: (data) => {
-      // Keep last 5 messages only
-      setMessages(prev => [data, ...prev].slice(0, 5));
-    }
-  });
-  
-  // Get badge color based on status
-  const getBadgeColor = () => {
-    switch(status) {
-      case 'open': return 'bg-green-500 hover:bg-green-600';
-      case 'connecting': return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'error':
-      case 'closed': return 'bg-red-500 hover:bg-red-600';
-      default: return 'bg-slate-500 hover:bg-slate-600';
-    }
-  };
-  
-  // Send a ping message to test connection
-  const handlePing = () => {
-    sendMessage({
-      type: 'ping',
-      timestamp: new Date().toISOString()
-    });
-  };
-  
-  return (
-    <Card className="shadow-md">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">WebSocket Connection</CardTitle>
-          <Badge className={getBadgeColor()}>
-            {status}
-          </Badge>
-        </div>
-        <CardDescription>
-          Real-time communication status
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handlePing}
-              disabled={status !== 'open'}
-            >
-              <Icons.send className="h-4 w-4 mr-2" />
-              Send Ping
-            </Button>
-          </div>
-          
-          {messages.length > 0 ? (
-            <div className="space-y-2 mt-4">
-              <h4 className="text-sm font-medium">Recent Messages:</h4>
-              <div className="bg-slate-50 p-3 rounded-md max-h-40 overflow-y-auto text-xs font-mono">
-                {messages.map((msg, idx) => (
-                  <div key={idx} className="mb-1 pb-1 border-b border-slate-200 last:border-0">
-                    {JSON.stringify(msg)}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="text-sm text-slate-500 mt-4">
-              No messages received yet
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
+interface WebSocketStatusProps {
+  status: 'connecting' | 'open' | 'closed' | 'error';
+  onReconnect?: () => void;
 }
 
-export default WebSocketStatus;
+export default function WebSocketStatus({ status, onReconnect }: WebSocketStatusProps) {
+  let icon;
+  let color;
+  let text;
+  let description;
+  
+  switch (status) {
+    case 'connecting':
+      icon = <Signal className="h-5 w-5 animate-pulse" />;
+      color = "text-yellow-500";
+      text = "Connecting...";
+      description = "Establishing WebSocket connection";
+      break;
+    case 'open':
+      icon = <CheckCircle className="h-5 w-5" />;
+      color = "text-green-500";
+      text = "Connected";
+      description = "Real-time connection is established";
+      break;
+    case 'closed':
+      icon = <XCircle className="h-5 w-5" />;
+      color = "text-gray-500";
+      text = "Disconnected";
+      description = "WebSocket connection is closed";
+      break;
+    case 'error':
+      icon = <XCircle className="h-5 w-5" />;
+      color = "text-red-500";
+      text = "Connection Error";
+      description = "Failed to establish WebSocket connection";
+      break;
+  }
+  
+  return (
+    <div className="flex items-center space-x-2 rounded-md border p-2 shadow-sm">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={`flex items-center ${color}`}>
+              {icon}
+              <span className="ml-1.5 text-sm font-medium hidden md:inline">{text}</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{description}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      {(status === 'closed' || status === 'error') && onReconnect && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2"
+          onClick={onReconnect}
+          title="Reconnect"
+        >
+          <RefreshCw className="h-4 w-4" />
+          <span className="ml-1 text-xs hidden md:inline">Reconnect</span>
+        </Button>
+      )}
+    </div>
+  );
+}

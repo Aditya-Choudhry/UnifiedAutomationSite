@@ -1,266 +1,317 @@
-import { Redis } from "ioredis";
-import { log } from "../vite";
-import { EventEmitter } from "events";
-
-// Mock Redis implementation for when Redis is not available
-class MockRedis extends EventEmitter {
-  private data: Map<string, string> = new Map();
-  private subscriptions: Set<string> = new Set();
-  
-  connect(): Promise<void> {
-    return Promise.resolve();
-  }
-  
-  quit(): Promise<string> {
-    return Promise.resolve("OK");
-  }
-  
-  publish(channel: string, message: string): Promise<number> {
-    this.emit("message", channel, message);
-    return Promise.resolve(1);
-  }
-  
-  psubscribe(pattern: string): Promise<void> {
-    this.subscriptions.add(pattern);
-    return Promise.resolve();
-  }
-  
-  punsubscribe(pattern: string): Promise<void> {
-    this.subscriptions.delete(pattern);
-    return Promise.resolve();
-  }
-  
-  set(key: string, value: string, ...args: any[]): Promise<string> {
-    // Handle expiry if EX is provided
-    if (args.length > 0 && args[0] === "EX") {
-      this.data.set(key, value);
-      // We don't actually expire the key in this mock implementation
-    } else {
-      this.data.set(key, value);
-    }
-    return Promise.resolve("OK");
-  }
-  
-  get(key: string): Promise<string | null> {
-    return Promise.resolve(this.data.get(key) || null);
-  }
-  
-  del(key: string): Promise<number> {
-    const exists = this.data.has(key);
-    this.data.delete(key);
-    return Promise.resolve(exists ? 1 : 0);
-  }
-}
+import Redis from 'ioredis';
+import { log } from '../vite';
 
 export class RedisService {
-  private publisher: Redis | MockRedis = new MockRedis(); // Initialize with MockRedis by default
-  private subscriber: Redis | MockRedis = new MockRedis(); // Initialize with MockRedis by default
-  private channels: Set<string> = new Set();
-  private handlers: Map<string, Array<(message: string, channel: string) => void>> = new Map();
-  private useMock: boolean = true; // Start with mock by default
-
+  private client: Redis | null = null;
+  private subscriber: Redis | null = null;
+  private channels: Map<string, Set<(message: string) => void>> = new Map();
+  private mockMode: boolean = false;
+  
   constructor() {
-    this.initialize();
-  }
-
-  private async initialize() {
-    // Start with mock implementation for now
-    // Skip trying to connect to Redis since we know it's not available in this environment
-    this.useMock = true;
-    this.createMockRedis();
-    log("Using in-memory mock Redis implementation by default", "redis");
-    
-    // Uncomment this for production when Redis is available
-    /*
     try {
-      // Try to use real Redis connection
-      this.publisher = new Redis({
-        lazyConnect: true,
-        enableOfflineQueue: true, // Allow commands to be queued while connecting
-        maxRetriesPerRequest: 1,
-        connectTimeout: 3000,
-        retryStrategy: () => null // Don't retry on failure
-      });
+      // Create main Redis client
+      this.client = new Redis({
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379', 10),
+        password: process.env.REDIS_PASSWORD || undefined,
+        // Reconnection settings
+        retryStrategy: (times: number) => {
+          if (times > 5) {
+            // Switch to mock mode after 5 retries
+            this.enableMockMode();
+            return null; // Stop trying to reconnect
+          }
+          // Exponential backoff with a max delay
+          return Math.min(100 * Math.pow(2, times), 3000);
+        },
+        connectTimeout: 5000, // 5 seconds timeout
+        maxRetriesPerRequest: 3
+      } as any);
       
+      // Separate client for pub/sub to avoid blocking operations
       this.subscriber = new Redis({
-        lazyConnect: true,
-        enableOfflineQueue: true,
-        maxRetriesPerRequest: 1,
-        connectTimeout: 3000,
-        retryStrategy: () => null
-      });
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379', 10),
+        password: process.env.REDIS_PASSWORD || undefined,
+        retryStrategy: (times: number) => {
+          if (times > 5) {
+            return null; // Stop trying to reconnect
+          }
+          return Math.min(100 * Math.pow(2, times), 3000);
+        },
+        connectTimeout: 5000, // 5 seconds timeout
+        maxRetriesPerRequest: 3
+      } as any);
       
-      // Try to connect
-      try {
-        await this.publisher.connect();
-        await this.subscriber.connect();
-        
-        // Set up message handler for real Redis
-        this.subscriber.on("message", (channel, message) => {
-          this.handleMessage(channel, message);
-        });
-        
-        log("Redis service initialized with real Redis connection", "redis");
-      } catch (connError) {
-        // Connection failed, fall back to mock implementation
-        log(`Redis connection error: ${connError}. Using in-memory implementation.`, "redis");
-        this.useMock = true;
-        this.createMockRedis();
-      }
-    } catch (error) {
-      // Redis instantiation failed, fall back to mock implementation
-      log(`Redis initialization error: ${error}. Using in-memory implementation.`, "redis");
-      this.useMock = true;
-      this.createMockRedis();
+      // Set up event handlers
+      this.setupEventHandlers();
+      
+      log('Redis service initialized', 'redis');
+    } catch (err) {
+      log(`Error initializing Redis: ${err}`, 'redis');
+      this.enableMockMode();
     }
-    */
   }
   
-  private createMockRedis() {
-    this.publisher = new MockRedis();
-    this.subscriber = new MockRedis();
+  private enableMockMode() {
+    if (this.mockMode) return;
     
-    // Set up message handler for mock Redis
-    this.subscriber.on("message", (channel, message) => {
-      this.handleMessage(channel, message);
+    this.mockMode = true;
+    log('Switching to Redis mock mode - all data will be stored in memory', 'redis');
+    
+    // Close existing connections if any
+    if (this.client) {
+      this.client.disconnect();
+      this.client = null;
+    }
+    
+    if (this.subscriber) {
+      this.subscriber.disconnect();
+      this.subscriber = null;
+    }
+  }
+  
+  private setupEventHandlers() {
+    if (!this.client || !this.subscriber) return;
+    
+    // Main client events
+    this.client.on('connect', () => {
+      log('Redis client connected', 'redis');
     });
     
-    log("Using in-memory mock Redis implementation", "redis");
-  }
-
-  public subscribe(channelPattern: string, handler: (message: string, channel: string) => void): void {
-    try {
-      // Add the handler
-      if (!this.handlers.has(channelPattern)) {
-        this.handlers.set(channelPattern, []);
-      }
-      this.handlers.get(channelPattern)!.push(handler);
-      
-      // Subscribe to the channel pattern if not already subscribed
-      if (!this.channels.has(channelPattern)) {
-        this.subscriber.psubscribe(channelPattern);
-        this.channels.add(channelPattern);
-        log(`Subscribed to Redis channel pattern: ${channelPattern}`, "redis");
-      }
-    } catch (error) {
-      log(`Redis subscription error: ${error}`, "redis");
-    }
-  }
-
-  public unsubscribe(channelPattern: string): void {
-    try {
-      if (this.channels.has(channelPattern)) {
-        this.subscriber.punsubscribe(channelPattern);
-        this.channels.delete(channelPattern);
-        this.handlers.delete(channelPattern);
-        log(`Unsubscribed from Redis channel pattern: ${channelPattern}`, "redis");
-      }
-    } catch (error) {
-      log(`Redis unsubscription error: ${error}`, "redis");
-    }
-  }
-
-  public subscribeToUserChannels(userId: number): void {
-    this.subscribe(`user:${userId}`, (message, channel) => {
-      log(`Message for user ${userId}: ${message}`, "redis");
+    this.client.on('error', (err) => {
+      log(`Redis client error: ${err}`, 'redis');
     });
-  }
-
-  public unsubscribeFromUserChannels(userId: number): void {
-    this.unsubscribe(`user:${userId}`);
-  }
-
-  public subscribeToWorkflow(workflowId: number): void {
-    this.subscribe(`workflow:${workflowId}`, (message, channel) => {
-      log(`Message for workflow ${workflowId}: ${message}`, "redis");
+    
+    // Subscriber client events
+    this.subscriber.on('connect', () => {
+      log('Redis subscriber connected', 'redis');
     });
-  }
-
-  public unsubscribeFromWorkflow(workflowId: number): void {
-    this.unsubscribe(`workflow:${workflowId}`);
-  }
-
-  public publish(channel: string, message: string): void {
-    try {
-      this.publisher.publish(channel, message);
-      log(`Published message to channel ${channel}`, "redis");
-    } catch (error) {
-      log(`Redis publish error: ${error}`, "redis");
-      
-      // Fallback - directly call handlers for testing
-      this.handleMessage(channel, message);
-    }
-  }
-
-  public async set(key: string, value: string, expirySeconds?: number): Promise<void> {
-    try {
-      if (expirySeconds) {
-        await this.publisher.set(key, value, "EX", expirySeconds);
-      } else {
-        await this.publisher.set(key, value);
-      }
-    } catch (error) {
-      log(`Redis set error: ${error}`, "redis");
-    }
-  }
-
-  public async get(key: string): Promise<string | null> {
-    try {
-      return await this.publisher.get(key);
-    } catch (error) {
-      log(`Redis get error: ${error}`, "redis");
-      return null;
-    }
-  }
-
-  public async del(key: string): Promise<void> {
-    try {
-      await this.publisher.del(key);
-    } catch (error) {
-      log(`Redis delete error: ${error}`, "redis");
-    }
-  }
-
-  private handleMessage(channel: string, message: string): void {
-    // Find all matching pattern handlers and invoke them
-    this.handlers.forEach((handlers, pattern) => {
-      if (this.matchPattern(pattern, channel)) {
-        handlers.forEach(handler => {
+    
+    this.subscriber.on('error', (err) => {
+      log(`Redis subscriber error: ${err}`, 'redis');
+    });
+    
+    this.subscriber.on('message', (channel, message) => {
+      const callbacks = this.channels.get(channel);
+      if (callbacks) {
+        callbacks.forEach(callback => {
           try {
-            handler(message, channel);
-          } catch (error) {
-            log(`Error in Redis message handler for pattern ${pattern}: ${error}`, "redis");
+            callback(message);
+          } catch (err) {
+            log(`Error in Redis message handler: ${err}`, 'redis');
           }
         });
       }
     });
   }
-
-  private matchPattern(pattern: string, channel: string): boolean {
-    // Simple pattern matching to mimic Redis PSUBSCRIBE
-    // Supports the * wildcard only
-    if (pattern === channel) return true;
-    
-    if (pattern.includes('*')) {
-      const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
-      return regex.test(channel);
+  
+  // Subscribe to a Redis channel
+  public subscribe(channel: string, callback: (message: string) => void) {
+    if (this.mockMode || !this.subscriber) {
+      // In mock mode, just store the callback but don't try to subscribe
+      if (!this.channels.has(channel)) {
+        this.channels.set(channel, new Set());
+      }
+      this.channels.get(channel)?.add(callback);
+      log(`Mock subscription to channel: ${channel}`, 'redis');
+      return () => this.unsubscribe(channel, callback);
     }
     
-    return false;
+    if (!this.channels.has(channel)) {
+      this.channels.set(channel, new Set());
+      // Subscribe only once per channel
+      this.subscriber.subscribe(channel, (err) => {
+        if (err) {
+          log(`Error subscribing to channel ${channel}: ${err}`, 'redis');
+        } else {
+          log(`Subscribed to Redis channel: ${channel}`, 'redis');
+        }
+      });
+    }
+    
+    this.channels.get(channel)?.add(callback);
+    
+    return () => {
+      // Return unsubscribe function
+      this.unsubscribe(channel, callback);
+    };
   }
-
-  public async close(): Promise<void> {
+  
+  // Unsubscribe from a Redis channel
+  public unsubscribe(channel: string, callback: (message: string) => void) {
+    const callbacks = this.channels.get(channel);
+    if (callbacks) {
+      callbacks.delete(callback);
+      
+      // If no more callbacks, unsubscribe from channel
+      if (callbacks.size === 0) {
+        this.channels.delete(channel);
+        if (!this.mockMode && this.subscriber) {
+          this.subscriber.unsubscribe(channel);
+          log(`Unsubscribed from Redis channel: ${channel}`, 'redis');
+        }
+      }
+    }
+  }
+  
+  // Publish message to a channel
+  public publish(channel: string, message: string | object) {
+    const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+    
+    if (this.mockMode || !this.client) {
+      // In mock mode, directly trigger callbacks for the channel
+      const callbacks = this.channels.get(channel);
+      if (callbacks) {
+        callbacks.forEach(callback => {
+          try {
+            callback(messageStr);
+          } catch (err) {
+            log(`Error in Redis mock message handler: ${err}`, 'redis');
+          }
+        });
+      }
+      return Promise.resolve(callbacks?.size || 0);
+    }
+    
+    return this.client.publish(channel, messageStr);
+  }
+  
+  // Store a value with optional expiration
+  public async set(key: string, value: string, ttlSeconds?: number) {
+    if (this.mockMode || !this.client) {
+      log(`Mock set operation for key: ${key}`, 'redis');
+      return 'OK';
+    }
+    
+    if (ttlSeconds) {
+      return this.client.set(key, value, 'EX', ttlSeconds);
+    } else {
+      return this.client.set(key, value);
+    }
+  }
+  
+  // Get a stored value
+  public async get(key: string) {
+    if (this.mockMode || !this.client) {
+      log(`Mock get operation for key: ${key}`, 'redis');
+      return null;
+    }
+    
+    return this.client.get(key);
+  }
+  
+  // Delete a key
+  public async del(key: string) {
+    if (this.mockMode || !this.client) {
+      log(`Mock del operation for key: ${key}`, 'redis');
+      return 1;
+    }
+    
+    return this.client.del(key);
+  }
+  
+  // Store object in Redis (automatically JSON stringified)
+  public async setObject(key: string, value: object, ttlSeconds?: number) {
+    return this.set(key, JSON.stringify(value), ttlSeconds);
+  }
+  
+  // Get object from Redis (automatically JSON parsed)
+  public async getObject<T = any>(key: string): Promise<T | null> {
+    const value = await this.get(key);
+    if (!value) return null;
+    
     try {
-      await this.subscriber.quit();
-      await this.publisher.quit();
-      log("Redis connections closed", "redis");
-    } catch (error) {
-      log(`Error closing Redis connections: ${error}`, "redis");
+      return JSON.parse(value) as T;
+    } catch (err) {
+      log(`Error parsing Redis object at ${key}: ${err}`, 'redis');
+      return null;
     }
   }
-}
-
-// Export a factory function for creating the Redis service
-export function createRedisService(): RedisService {
-  return new RedisService();
+  
+  // Increment a counter
+  public async increment(key: string, by = 1) {
+    if (this.mockMode || !this.client) {
+      log(`Mock increment operation for key: ${key}`, 'redis');
+      return by;
+    }
+    return this.client.incrby(key, by);
+  }
+  
+  // Add to a set
+  public async addToSet(key: string, ...members: string[]) {
+    if (this.mockMode || !this.client) {
+      log(`Mock addToSet operation for key: ${key}`, 'redis');
+      return members.length;
+    }
+    return this.client.sadd(key, ...members);
+  }
+  
+  // Get all members of a set
+  public async getSetMembers(key: string) {
+    if (this.mockMode || !this.client) {
+      log(`Mock getSetMembers operation for key: ${key}`, 'redis');
+      return [];
+    }
+    return this.client.smembers(key);
+  }
+  
+  // Check if an item is in a set
+  public async isInSet(key: string, member: string) {
+    if (this.mockMode || !this.client) {
+      log(`Mock isInSet operation for key: ${key}`, 'redis');
+      return false;
+    }
+    const result = await this.client.sismember(key, member);
+    return result === 1;
+  }
+  
+  // Add to a sorted set with score
+  public async addToSortedSet(key: string, score: number, member: string) {
+    if (this.mockMode || !this.client) {
+      log(`Mock addToSortedSet operation for key: ${key}`, 'redis');
+      return 1;
+    }
+    return this.client.zadd(key, score, member);
+  }
+  
+  // Get members from a sorted set with scores
+  public async getSortedSetWithScores(key: string, start = 0, end = -1) {
+    if (this.mockMode || !this.client) {
+      log(`Mock getSortedSetWithScores operation for key: ${key}`, 'redis');
+      return [];
+    }
+    
+    const result = await this.client.zrange(key, start, end, 'WITHSCORES');
+    
+    // Convert flat array to array of [member, score] pairs
+    const pairs: [string, number][] = [];
+    for (let i = 0; i < result.length; i += 2) {
+      pairs.push([result[i], parseFloat(result[i + 1])]);
+    }
+    
+    return pairs;
+  }
+  
+  // Close connections
+  public async close() {
+    if (this.mockMode) {
+      log('Redis mock mode - no connections to close', 'redis');
+      return;
+    }
+    
+    if (this.subscriber) {
+      await this.subscriber.quit().catch(err => {
+        log(`Error closing Redis subscriber: ${err}`, 'redis');
+      });
+    }
+    
+    if (this.client) {
+      await this.client.quit().catch(err => {
+        log(`Error closing Redis client: ${err}`, 'redis');
+      });
+    }
+    
+    log('Redis connections closed', 'redis');
+  }
 }

@@ -1,11 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { WebSocketServer } from 'ws';
 import { storage } from "./storage";
 import { createApiRouter } from "./api";
-import { createRedisService } from "./services/redis";
-import { createWebSocketService } from "./services/websocket";
-import { createAIService } from "./services/ai";
+import { RedisService } from "./services/redis";
+import { WebSocketService } from "./services/websocket";
+import { AIService } from "./services/ai";
 import { log } from "./vite";
 import session from "express-session";
 import MemoryStore from "memorystore";
@@ -14,9 +13,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
   // Initialize services
-  const redisService = createRedisService();
-  const wsService = createWebSocketService(httpServer, redisService);
-  const aiService = createAIService(redisService, storage);
+  const redisService = new RedisService();
+  const wsService = new WebSocketService(httpServer, redisService, storage);
+  const aiService = new AIService(redisService, storage);
   
   // Configure session middleware
   const MemoryStoreSession = MemoryStore(session);
@@ -74,9 +73,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const cleanup = () => {
     log("Shutting down server and services...", "server");
     redisService.close()
-      .catch(err => log(`Error closing Redis: ${err}`, "server"));
+      .catch((err: Error) => log(`Error closing Redis: ${err}`, "server"));
       
     wsService.close();
+    aiService.close();
   };
   
   process.on('SIGINT', cleanup);

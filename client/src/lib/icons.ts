@@ -51,7 +51,13 @@ import {
   Calendar,
   Key,
   Phone,
-  MessageSquare
+  MessageSquare,
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Loader,
+  HelpCircle
 } from "lucide-react";
 
 // Import social media icons from react-icons
@@ -153,5 +159,13 @@ export const Icons = {
   
   // Rating
   star: FaStar,
-  starHalf: FaStarHalfAlt
+  starHalf: FaStarHalfAlt,
+  
+  // Status and alert icons
+  alertCircle: AlertCircle,
+  alertTriangle: AlertTriangle,
+  checkCircle: CheckCircle,
+  xCircle: XCircle,
+  loader: Loader,
+  help: HelpCircle
 };

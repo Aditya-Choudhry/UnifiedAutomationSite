@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import WorkflowNode, { NodeData, NodeType, getNodeBadgeColor } from './WorkflowNode';
+import NodeConfigPanel from './NodeConfigPanel';
+import WorkflowTester from './WorkflowTester';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -577,80 +579,75 @@ export default function WorkflowCanvas({ onWorkflowCreate, onLivePreview }: Work
             </div>
             
             {selectedNode && (
-              <div className="h-56 border-t p-4 bg-white overflow-auto">
-                <div className="flex justify-between mb-3">
-                  <h4 className="font-medium">{selectedNode.title} Properties</h4>
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => startDrawingLine(selectedNode.id)}
-                      disabled={isDrawingLine}
-                    >
-                      <Icons.arrowRight className="mr-2 h-4 w-4" /> Connect
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-red-500 hover:text-red-600"
-                      onClick={() => {
-                        setNodes(prevNodes => prevNodes.filter(n => n.id !== selectedNode.id));
-                        setSelectedNodeId(null);
-                      }}
-                    >
-                      <Icons.trash className="mr-2 h-4 w-4" /> Delete
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="node-title">Title</Label>
-                    <Input 
-                      id="node-title" 
-                      value={selectedNode.title}
-                      onChange={(e) => {
-                        setNodes(prevNodes => 
-                          prevNodes.map(n => 
-                            n.id === selectedNode.id 
-                              ? { ...n, title: e.target.value } 
-                              : n
-                          )
-                        );
-                      }}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="node-type">Type</Label>
-                    <Input 
-                      id="node-type" 
-                      value={selectedNode.type.charAt(0).toUpperCase() + selectedNode.type.slice(1)}
-                      disabled
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-                
-                <div className="mt-3">
-                  <Label htmlFor="node-description">Description</Label>
-                  <Textarea 
-                    id="node-description"
-                    value={selectedNode.description}
-                    onChange={(e) => {
-                      setNodes(prevNodes => 
-                        prevNodes.map(n => 
-                          n.id === selectedNode.id 
-                            ? { ...n, description: e.target.value } 
-                            : n
-                        )
-                      );
-                    }}
-                    className="mt-1"
-                    rows={2}
-                  />
-                </div>
-              </div>
+              <NodeConfigPanel
+                node={selectedNode}
+                allNodes={nodes}
+                onConfigUpdate={(nodeId, updates) => {
+                  setNodes(prevNodes => 
+                    prevNodes.map(n => 
+                      n.id === nodeId 
+                        ? { ...n, ...updates } 
+                        : n
+                    )
+                  );
+                }}
+                onDeleteNode={(nodeId) => {
+                  setNodes(prevNodes => prevNodes.filter(n => n.id !== nodeId));
+                  setSelectedNodeId(null);
+                }}
+                onStartConnection={startDrawingLine}
+                onTestNode={(nodeId) => {
+                  // Simulate testing a single node
+                  const node = nodes.find(n => n.id === nodeId);
+                  if (!node) return;
+                  
+                  // Set node status to running
+                  setNodes(prevNodes => 
+                    prevNodes.map(n => 
+                      n.id === nodeId 
+                        ? { ...n, status: 'running' } 
+                        : n
+                    )
+                  );
+                  
+                  // After a delay, set status to success and add results
+                  setTimeout(() => {
+                    // 10% chance of failure for demo purposes
+                    const success = Math.random() > 0.1;
+                    
+                    // Create test results
+                    const testResults = {
+                      success,
+                      message: success ? 'Node executed successfully' : 'Node execution failed',
+                      logs: success 
+                        ? [
+                            'Starting node execution',
+                            'Processing data',
+                            'Node execution completed successfully'
+                          ]
+                        : [
+                            'Starting node execution',
+                            'Error occurred during processing',
+                            'Node execution failed'
+                          ],
+                      data: success
+                        ? { result: 'Sample output data', timestamp: new Date().toISOString() }
+                        : null,
+                      duration: Math.floor(Math.random() * 1000) + 500
+                    };
+                    
+                    // Update node in state
+                    setNodes(prevNodes => 
+                      prevNodes.map(n => 
+                        n.id === nodeId 
+                          ? { ...n, status: success ? 'success' : 'error', executionResults: testResults } 
+                          : n
+                      )
+                    );
+                  }, 1500);
+                }}
+                isDrawingLine={isDrawingLine}
+              />
             )}
           </div>
         </TabsContent>
@@ -698,74 +695,32 @@ export default function WorkflowCanvas({ onWorkflowCreate, onLivePreview }: Work
         </TabsContent>
         
         {/* Preview Tab */}
-        <TabsContent value="preview" className="flex-1 overflow-auto p-6 data-[state=inactive]:hidden">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg border shadow-sm p-6 mb-6">
-              <h3 className="text-xl font-bold mb-2">{workflowName}</h3>
-              <p className="text-slate-600 mb-6">{workflowDescription || 'No description provided.'}</p>
-              
-              <div className="space-y-4">
-                {nodes.length > 0 ? (
-                  nodes.map((node, index) => (
-                    <div 
-                      key={node.id}
-                      className="flex items-start"
-                    >
-                      <div className="flex flex-col items-center mr-4">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getNodeBadgeColor(node.type)} text-white`}>
-                          {index + 1}
-                        </div>
-                        {index < nodes.length - 1 && (
-                          <div className="w-0.5 h-12 bg-slate-200 my-1"></div>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 pt-1">
-                        <div className="flex items-center mb-1">
-                          <Badge className={`mr-2 ${getNodeBadgeColor(node.type)}`}>
-                            {node.type.charAt(0).toUpperCase() + node.type.slice(1)}
-                          </Badge>
-                          <h4 className="font-bold">{node.title}</h4>
-                        </div>
-                        <p className="text-sm text-slate-600 mb-2">{node.description}</p>
-                        
-                        {node.configData && Object.keys(node.configData).length > 0 && (
-                          <div className="bg-slate-50 rounded p-3 text-sm">
-                            <h5 className="font-medium mb-1">Configuration:</h5>
-                            <div className="grid grid-cols-2 gap-2">
-                              {Object.entries(node.configData).map(([key, value]) => (
-                                <div key={key} className="flex">
-                                  <span className="font-medium mr-2">{key}:</span>
-                                  <span className="text-slate-600">{String(value)}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-slate-400">
-                    <Icons.info className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                    <p>No workflow steps defined yet.</p>
-                    <p className="text-sm mt-1">Go to the Build tab to create your workflow.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="bg-primary-50 rounded-lg p-6 text-center">
-              <h3 className="text-lg font-bold mb-2">Ready to implement this workflow?</h3>
-              <p className="text-slate-600 mb-4">Get started with Unified Automation Hub today!</p>
-              <div className="flex justify-center space-x-4">
-                <Button>Sign Up Free</Button>
-                <Button variant="outline" onClick={() => setActiveTab('build')}>
-                  Edit Workflow
-                </Button>
-              </div>
-            </div>
-          </div>
+        <TabsContent value="preview" className="flex-1 overflow-auto p-0 data-[state=inactive]:hidden">
+          <WorkflowTester
+            workflowName={workflowName}
+            workflowDescription={workflowDescription}
+            nodes={nodes}
+            onRunWorkflow={() => {
+              // Set all nodes to idle status before running
+              setNodes(prevNodes => 
+                prevNodes.map(n => ({ ...n, status: 'idle', executionResults: undefined }))
+              );
+            }}
+            onNodeStatusUpdate={(nodeId, status) => {
+              setNodes(prevNodes => 
+                prevNodes.map(n => 
+                  n.id === nodeId ? { ...n, status } : n
+                )
+              );
+            }}
+            onNodeExecutionComplete={(nodeId, results) => {
+              setNodes(prevNodes => 
+                prevNodes.map(n => 
+                  n.id === nodeId ? { ...n, executionResults: results } : n
+                )
+              );
+            }}
+          />
         </TabsContent>
       </Tabs>
     </div>
