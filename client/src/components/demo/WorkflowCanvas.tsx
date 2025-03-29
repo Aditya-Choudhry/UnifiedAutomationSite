@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import WorkflowNode, { NodeData, NodeType } from './WorkflowNode';
+import WorkflowNode, { NodeData, NodeType, getNodeBadgeColor } from './WorkflowNode';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

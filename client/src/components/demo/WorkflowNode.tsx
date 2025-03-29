@@ -42,7 +42,7 @@ const getNodeColor = (type: NodeType) => {
   }
 };
 
-const getNodeBadgeColor = (type: NodeType) => {
+export const getNodeBadgeColor = (type: NodeType) => {
   switch (type) {
     case 'trigger':
       return 'bg-blue-500';
