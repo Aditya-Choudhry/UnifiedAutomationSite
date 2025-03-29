@@ -89,22 +89,22 @@ npm run dev
 
 ## Future Roadmap
 
-### Q1 2024
+### Q1 2025
 - AI-powered workflow suggestions
 - Advanced analytics dashboard
 - Custom node development kit
 
-### Q2 2024
+### Q2 2025
 - Multi-cloud deployment options
 - Enhanced compliance features
 - Blockchain integration
 
-### Q3 2024
+### Q3 2025
 - Edge computing support
 - Advanced ML capabilities
 - Custom workflow marketplace
 
-### Q4 2024
+### Q4 2025
 - Global CDN integration
 - Advanced security features
 - Enterprise app store
