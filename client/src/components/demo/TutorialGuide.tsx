@@ -174,7 +174,25 @@ interface TutorialProps {
 }
 
 function TutorialCard({ tutorial, expanded = false }: TutorialProps) {
-  const IconComponent = Icons[tutorial.icon] || Icons.file;
+  // Use a render function approach which is safer for TypeScript
+  const renderIcon = () => {
+    switch (tutorial.icon) {
+      case 'mail':
+        return <Icons.mail className="h-5 w-5" />;
+      case 'users':
+        return <Icons.users className="h-5 w-5" />;
+      case 'arrowDownUp':
+        return <Icons.arrowDownUp className="h-5 w-5" />;
+      case 'mapPin':
+        return <Icons.info className="h-5 w-5" />; // Fallback if mapPin doesn't exist
+      case 'webhook':
+        return <Icons.arrowLeftRight className="h-5 w-5" />; // For webhook
+      case 'checkSquare':
+        return <Icons.check className="h-5 w-5" />; // For approval
+      default:
+        return <Icons.file className="h-5 w-5" />;
+    }
+  };
   
   // Calculate progress
   const completedSteps = tutorial.steps.filter(step => step.completed).length;
@@ -195,7 +213,7 @@ function TutorialCard({ tutorial, expanded = false }: TutorialProps) {
       <CardHeader className="p-4 pb-3">
         <div className="flex justify-between items-start mb-2">
           <div className={`p-2 rounded-md ${getLevelColor(tutorial.level)} text-white`}>
-            <IconComponent className="h-5 w-5" />
+            {renderIcon()}
           </div>
           <Badge variant="outline" className="capitalize">
             {tutorial.level}

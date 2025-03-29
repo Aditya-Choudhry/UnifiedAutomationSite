@@ -1,15 +1,44 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer } from 'ws';
 import { storage } from "./storage";
+import { createApiRouter } from "./api";
+import { createRedisService } from "./services/redis";
+import { createWebSocketService } from "./services/websocket";
+import { createAIService } from "./services/ai";
+import { log } from "./vite";
+import session from "express-session";
+import MemoryStore from "memorystore";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // API routes
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", message: "Unified Automation Hub API is running" });
-  });
+  const httpServer = createServer(app);
+  
+  // Initialize services
+  const redisService = createRedisService();
+  const wsService = createWebSocketService(httpServer, redisService);
+  const aiService = createAIService(redisService, storage);
+  
+  // Configure session middleware
+  const MemoryStoreSession = MemoryStore(session);
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'unified-automation-hub-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    },
+    store: new MemoryStoreSession({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    })
+  }));
+  
+  // Register API routes
+  const apiRouter = createApiRouter(storage, redisService, aiService, wsService);
+  app.use('/api', apiRouter);
 
-  // Create a basic endpoint to get workflows (simulated for now)
-  app.get("/api/workflows", (req, res) => {
+  // Legacy API routes - keeping for backwards compatibility
+  app.get("/api/legacy/workflows", (req, res) => {
     res.json({
       workflows: [
         {
@@ -40,8 +69,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ]
     });
   });
-
-  const httpServer = createServer(app);
+  
+  // Set up cleanup for service shutdown
+  const cleanup = () => {
+    log("Shutting down server and services...", "server");
+    redisService.close()
+      .catch(err => log(`Error closing Redis: ${err}`, "server"));
+      
+    wsService.close();
+  };
+  
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
 
   return httpServer;
 }

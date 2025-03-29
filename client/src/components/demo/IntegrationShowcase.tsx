@@ -39,7 +39,7 @@ const integrations = [
     name: 'Slack',
     category: 'communication',
     description: 'Send notifications and messages to Slack channels',
-    icon: 'messageSquare',
+    icon: 'chat', // Updated to match Icons
     popular: true,
     actions: ['Send message', 'Create channel', 'Add user to channel'],
     triggers: ['New message', 'Channel created', 'Reaction added']
@@ -49,7 +49,7 @@ const integrations = [
     name: 'Gmail',
     category: 'communication',
     description: 'Send and receive emails through Gmail',
-    icon: 'mail',
+    icon: 'mail', // Already matches Icons
     popular: true,
     actions: ['Send email', 'Create draft', 'Add label'],
     triggers: ['New email', 'Email opened', 'Email labeled']
@@ -59,7 +59,7 @@ const integrations = [
     name: 'Google Sheets',
     category: 'productivity',
     description: 'Create and update Google Sheets spreadsheets',
-    icon: 'table',
+    icon: 'layoutGrid', // Updated to match Icons
     popular: true,
     actions: ['Add row', 'Update cell', 'Create sheet'],
     triggers: ['Row added', 'Cell updated', 'New comment']
@@ -69,7 +69,7 @@ const integrations = [
     name: 'Trello',
     category: 'productivity',
     description: 'Manage Trello boards and cards',
-    icon: 'listTodo',
+    icon: 'list', // Updated to match Icons
     popular: false,
     actions: ['Create card', 'Move card', 'Add comment'],
     triggers: ['Card created', 'Card moved', 'Due date approaching']
@@ -79,7 +79,7 @@ const integrations = [
     name: 'Salesforce',
     category: 'crm',
     description: 'Integrate with Salesforce CRM',
-    icon: 'cloudLightning',
+    icon: 'bolt', // Updated to match Icons
     popular: true,
     actions: ['Create record', 'Update record', 'Add task'],
     triggers: ['Record created', 'Opportunity updated', 'Task completed']
@@ -89,7 +89,7 @@ const integrations = [
     name: 'HubSpot',
     category: 'crm',
     description: 'Connect with HubSpot CRM and marketing tools',
-    icon: 'activity',
+    icon: 'activity', // Already matches Icons
     popular: false,
     actions: ['Create contact', 'Add to workflow', 'Send marketing email'],
     triggers: ['Contact created', 'Deal stage changed', 'Form submitted']
@@ -99,7 +99,7 @@ const integrations = [
     name: 'GitHub',
     category: 'developer',
     description: 'Automate GitHub repository tasks',
-    icon: 'gitBranch',
+    icon: 'code', // Updated to match Icons
     popular: false,
     actions: ['Create issue', 'Add comment', 'Create PR'],
     triggers: ['New PR', 'Issue closed', 'PR merged']
@@ -109,7 +109,7 @@ const integrations = [
     name: 'Stripe',
     category: 'developer',
     description: 'Process payments and manage subscriptions',
-    icon: 'creditCard',
+    icon: 'shoppingCart', // Updated to match Icons
     popular: true,
     actions: ['Create charge', 'Update subscription', 'Create customer'],
     triggers: ['Payment received', 'Subscription created', 'Payment failed']
@@ -183,14 +183,38 @@ interface IntegrationProps {
 }
 
 function IntegrationCard({ integration }: IntegrationProps) {
-  const IconComponent = Icons[integration.icon] || Icons.activity;
+  // Use a render prop approach which is safer for TypeScript
+  // This avoids issues with dynamic icon components
+  const renderIcon = () => {
+    switch (integration.icon) {
+      case 'chat':
+        return <Icons.chat className="h-5 w-5" />;
+      case 'mail':
+        return <Icons.mail className="h-5 w-5" />;
+      case 'layoutGrid':
+        return <Icons.layoutGrid className="h-5 w-5" />;
+      case 'list':
+        return <Icons.list className="h-5 w-5" />;
+      case 'bolt':
+        return <Icons.bolt className="h-5 w-5" />;
+      case 'activity':
+        return <Icons.activity className="h-5 w-5" />;
+      case 'code':
+        return <Icons.code className="h-5 w-5" />;
+      case 'shoppingCart':
+        return <Icons.shoppingCart className="h-5 w-5" />;
+      default:
+        return <Icons.activity className="h-5 w-5" />;
+    }
+  };
+  
   const category = integrationCategories.find(cat => cat.id === integration.category);
   
   return (
     <Card className="overflow-hidden hover:shadow-md transition">
       <CardHeader className="p-4 pb-2 flex flex-row items-center gap-3 space-y-0">
         <div className={`p-2 rounded-md ${category?.color || 'bg-slate-500'} text-white`}>
-          <IconComponent className="h-5 w-5" />
+          {renderIcon()}
         </div>
         <div>
           <CardTitle className="text-base">{integration.name}</CardTitle>
