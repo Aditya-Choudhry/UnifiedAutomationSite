@@ -1,0 +1,95 @@
+import { 
+  Bot, 
+  Globe, 
+  Database, 
+  Mail, 
+  Clock, 
+  Send, 
+  Code, 
+  FileText, 
+  Check, 
+  ChevronRight, 
+  Menu, 
+  X, 
+  Save, 
+  Undo, 
+  Redo, 
+  Play, 
+  Settings, 
+  Plus, 
+  Copy, 
+  Info, 
+  ChevronDown,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  Shield,
+  Bolt,
+  LineChart,
+  Users,
+  Lightbulb,
+  BarChart2,
+  Search,
+  LayoutGrid,
+  List
+} from "lucide-react";
+
+// Import social media icons from react-icons
+import { 
+  FaTwitter, 
+  FaLinkedin, 
+  FaFacebook, 
+  FaGithub, 
+  FaStar, 
+  FaStarHalfAlt,
+  FaPuzzlePiece
+} from "react-icons/fa";
+
+// Icon mapping
+export const Icons = {
+  // App icons
+  robot: Bot,
+  globe: Globe,
+  database: Database,
+  email: Mail,
+  clock: Clock,
+  paperPlane: Send,
+  code: Code,
+  file: FileText,
+  check: Check,
+  chevronRight: ChevronRight,
+  menu: Menu,
+  close: X,
+  save: Save,
+  undo: Undo,
+  redo: Redo,
+  play: Play,
+  settings: Settings,
+  plus: Plus,
+  copy: Copy,
+  info: Info,
+  chevronDown: ChevronDown,
+  arrowUp: ArrowUp,
+  arrowDown: ArrowDown,
+  minus: Minus,
+  shield: Shield,
+  bolt: Bolt,
+  chart: LineChart,
+  users: Users,
+  lightbulb: Lightbulb,
+  barChart: BarChart2,
+  search: Search,
+  grid: LayoutGrid,
+  list: List,
+  puzzle: FaPuzzlePiece,
+  
+  // Social media
+  twitter: FaTwitter,
+  linkedin: FaLinkedin,
+  facebook: FaFacebook,
+  github: FaGithub,
+  
+  // Rating
+  star: FaStar,
+  starHalf: FaStarHalfAlt
+};
