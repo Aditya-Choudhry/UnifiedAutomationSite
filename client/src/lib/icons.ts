@@ -44,7 +44,14 @@ import {
   GraduationCap,
   ArrowUpDown,
   RefreshCw,
-  Boxes
+  Boxes,
+  SlidersHorizontal,
+  Quote,
+  Download,
+  Calendar,
+  Key,
+  Phone,
+  MessageSquare
 } from "lucide-react";
 
 // Import social media icons from react-icons
@@ -128,6 +135,15 @@ export const Icons = {
   plugZap: FaBolt,
   graduationCap: GraduationCap,
   appWindow: FaRegWindowMaximize,
+  
+  // Icons for pricing page
+  sliders: SlidersHorizontal,
+  quote: Quote,
+  download: Download,
+  calendar: Calendar,
+  key: Key,
+  phone: Phone,
+  chat: MessageSquare,
   
   // Social media
   twitter: FaTwitter,

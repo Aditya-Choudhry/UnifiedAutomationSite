@@ -3,6 +3,9 @@ import { Icons } from "@/lib/icons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PricingCalculator from "@/components/pricing/PricingCalculator";
 import FeatureComparison from "@/components/pricing/FeatureComparison";
+import UsageCalculator from "@/components/pricing/UsageCalculator";
+import PricingTestimonials from "@/components/pricing/PricingTestimonials";
+import EnterprisePricing from "@/components/pricing/EnterprisePricing";
 
 export default function Pricing() {
   return (
@@ -264,6 +267,23 @@ export default function Pricing() {
               </div>
             </TabsContent>
           </Tabs>
+        </div>
+
+        {/* Advanced Usage Calculator */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">Advanced Usage-Based Calculator</h2>
+          <UsageCalculator />
+        </div>
+
+        {/* Customer Testimonials */}
+        <div className="mt-16 max-w-6xl mx-auto">
+          <PricingTestimonials />
+        </div>
+
+        {/* Enterprise Pricing */}
+        <div className="mt-16 max-w-6xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">Enterprise Solutions</h2>
+          <EnterprisePricing />
         </div>
 
         {/* FAQs */}
